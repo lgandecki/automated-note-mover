@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "change-filename-to-title",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "Change the filename of the current file to its title.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
