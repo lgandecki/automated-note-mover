@@ -85,6 +85,9 @@ if (prod) {
 				path.join(destinationDir, "manifest.json")
 			);
 			copyFile("styles.css", path.join(destinationDir, "styles.css"));
+			fs.closeSync(
+				fs.openSync(path.join(destinationDir, ".hotreload"), "w")
+			);
 		}
 	});
 
