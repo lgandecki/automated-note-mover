@@ -1,6 +1,6 @@
 {
-  "id": "test",
-  "name": "test",
+  "id": "automated-note-mover",
+  "name": "automated note mover",
   "version": "1.0.0",
   "minAppVersion": "0.15.0",
   "description": "Change the filename of the current file to its title.",
