@@ -1,105 +1,94 @@
-import { Plugin, TFile, Editor, MarkdownView, debounce } from "obsidian";
+import { Plugin, Notice, MarkdownView, TFile, normalizePath } from "obsidian";
 
-export default class RenameOnHeaderChangePlugin extends Plugin {
-  // Store the last known header to prevent unnecessary renames
-  private lastHeader = "";
-
-  // Debounce the onEditorChange method
-  private debouncedOnEditorChange = debounce(
-    this.onEditorChange.bind(this),
-    250,
-    true
-  );
-
+export default class MyPlugin extends Plugin {
   async onload() {
-    this.registerEvent(
-      this.app.workspace.on("editor-change", this.debouncedOnEditorChange)
-    );
-
     this.addCommand({
-      id: "move-to-thoughts",
-      name: "Move all files from 🗂️ Triage to 💭 Thoughts",
-      callback: () => this.moveAllFilesToThoughts(),
+      id: "process-current-line",
+      name: "Process Current Line",
+      callback: () => this.processCurrentLine(),
     });
   }
 
-  async onEditorChange(editor: Editor, markdownView: MarkdownView) {
-    const file = markdownView.file;
-    if (!file) return;
+  async processCurrentLine() {
+    const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!activeView) {
+      new Notice("No active markdown view.");
+      return;
+    }
 
-    // Get the content of the first line
-    const firstLine = editor.getLine(0);
-    // Match the first header (e.g., # Heading)
-    const headerMatch = firstLine.match(/^#\s+(.*)/);
+    const editor = activeView.editor;
+    const cursor = editor.getCursor();
+    const lineText = editor.getLine(cursor.line).trim();
 
-    if (headerMatch) {
-      // Extract the heading text
-      let newName = headerMatch[1].trim();
+    if (lineText.startsWith("move")) {
+      const moveCommandRegex = /^move\s+\[\[([^\]|]+)(\|.*)?\]\]/;
+      const match = lineText.match(moveCommandRegex);
 
-      // If the heading hasn't changed, do nothing
-      if (newName === this.lastHeader) return;
-      if (newName === "") return;
-
-      this.lastHeader = newName;
-
-      // Sanitize the new filename
-      newName = this.sanitizeFileName(newName) + ".md";
-
-      // If the filename has changed, debounce the rename operation
-      if (file.name !== newName) {
-        this.debounceRenameFile(file, newName);
+      if (match) {
+        const destinationLink = match[1].trim();
+        await this.moveCurrentFile(destinationLink);
+      } else {
+        new Notice("Invalid move command format.");
       }
+    } else if (lineText.startsWith("title")) {
+      // Placeholder for "title" action implementation
+      new Notice("Title action is not implemented yet.");
+    } else {
+      new Notice("No recognized action on the current line.");
     }
   }
 
-  // Debounce the renameFile operation
-  private debounceRenameFile = debounce(
-    async (file: TFile, newName: string) => {
-      const newFilePath = file.path.replace(file.name, newName);
-      await this.app.fileManager.renameFile(file, newFilePath);
-    },
-    100,
-    true
-  );
+  async moveCurrentFile(destinationLink: string) {
+    const file = this.app.workspace.getActiveFile();
+    if (!file) {
+      new Notice("No active file to move.");
+      return;
+    }
 
-  // Method to sanitize the filename by replacing invalid characters
-  sanitizeFileName(name: string): string {
-    // Replace invalid filename characters with an underscore
-    return name.replace(/[\\/:*?"<>,|]/g, "-");
-  }
+    // Ignore alias if present
+    const destinationPath = destinationLink.split("|")[0];
 
-  // Method to move the current file from "🗂️ Triage" to "💭 Thoughts"
-  async moveAllFilesToThoughts() {
-    const triageFolderPath = "🗂️ Triage";
-    const thoughtsFolderPath = "💭 Thoughts";
+    // Extract folder path and new file name from the destination
+    const pathParts = destinationPath.split("/");
+    const newFileName = pathParts.pop() + ".md";
+    const destinationFolder = pathParts.join("/");
 
-    try {
-      const files = this.app.vault.getFiles();
+    // Normalize paths
+    const destinationFolderPath = normalizePath(destinationFolder);
+    const fullDestinationPath = normalizePath(
+      `${destinationFolderPath}/${newFileName}`
+    );
 
-      // Filter files in "🗂️ Triage" folder
-      const triageFiles = files.filter((file) =>
-        file.path.startsWith(`${triageFolderPath}/`)
-      );
-
-      if (triageFiles.length === 0) {
-        new Notice("No files found in 🗂️ Triage folder.");
+    // Create the destination folder if it doesn't exist
+    if (!(await this.app.vault.adapter.exists(destinationFolderPath))) {
+      try {
+        await this.app.vault.createFolder(destinationFolderPath);
+      } catch (error) {
+        new Notice("Failed to create folder: " + (error as Error).message);
         return;
       }
+    }
 
-      for (const file of triageFiles) {
-        const newPath = file.path.replace(
-          `${triageFolderPath}/`,
-          `${thoughtsFolderPath}/`
-        );
-        await this.app.fileManager.renameFile(file, newPath);
-      }
+    // Check if the destination file already exists
+    const destinationFile = this.app.metadataCache.getFirstLinkpathDest(
+      destinationPath,
+      ""
+    );
+    let targetPath: string;
 
-      new Notice(
-        `Moved ${triageFiles.length} files to "${thoughtsFolderPath}"`
-      );
+    if (!destinationFile) {
+      // Destination file does not exist, move and rename current file
+      targetPath = fullDestinationPath;
+    } else {
+      // Destination file exists, move current file to destination folder, keep current name
+      targetPath = `${destinationFolderPath}/${file.name}`;
+    }
+
+    try {
+      await this.app.fileManager.renameFile(file, targetPath);
+      new Notice(`Moved file to ${targetPath}`);
     } catch (error) {
-      console.error("Failed to move files:", error);
-      new Notice("Failed to move files. Check console for details.");
+      new Notice("Failed to move file: " + (error as Error).message);
     }
   }
 }
