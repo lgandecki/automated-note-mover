@@ -1,11 +1,11 @@
 {
-	"id": "change-filename-to-title",
-	"name": "Change Filename to Title",
-	"version": "1.0.0",
-	"minAppVersion": "0.15.0",
-	"description": "Change the filename of the current file to its title.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+  "id": "test",
+  "name": "test",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "Change the filename of the current file to its title.",
+  "author": "Obsidian",
+  "authorUrl": "https://obsidian.md",
+  "fundingUrl": "https://obsidian.md/pricing",
+  "isDesktopOnly": false
 }
