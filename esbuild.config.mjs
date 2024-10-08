@@ -9,26 +9,26 @@ import os from "os";
 const manifest = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
 
 function copyFile(source, destination) {
-	fs.copyFile(source, destination, (err) => {
-		if (err) {
-			console.error("Error copying file:", err);
-		} else {
-			console.log(`${source} was copied to ${destination}`);
-		}
-	});
+  fs.copyFile(source, destination, (err) => {
+    if (err) {
+      console.error("Error copying file:", err);
+    } else {
+      console.log(`${source} was copied to ${destination}`);
+    }
+  });
 }
 const homeDir = os.homedir();
 const pluginName = manifest.id;
 const destinationDir = path.join(
-	homeDir,
-	"/Library/Mobile Documents/com~apple~CloudDocs/Documents/Obsidian Vault/.obsidian/plugins/",
-	pluginName
+  homeDir,
+  process.env.OBSIDIAN_VAULT_PLUGINS_PATH,
+  pluginName
 );
 
 // Create destinationDir if it doesn't exist
 if (!fs.existsSync(destinationDir)) {
-	fs.mkdirSync(destinationDir, { recursive: true });
-	console.log(`Created directory: ${destinationDir}`);
+  fs.mkdirSync(destinationDir, { recursive: true });
+  console.log(`Created directory: ${destinationDir}`);
 }
 
 const banner = `/*
@@ -40,62 +40,57 @@ if you want to view the source, please visit the github repository of this plugi
 const prod = process.argv[2] === "production";
 
 const context = await esbuild.context({
-	banner: {
-		js: banner,
-	},
-	entryPoints: ["src/main.ts"],
-	bundle: true,
-	external: [
-		"obsidian",
-		"electron",
-		"@codemirror/autocomplete",
-		"@codemirror/collab",
-		"@codemirror/commands",
-		"@codemirror/language",
-		"@codemirror/lint",
-		"@codemirror/search",
-		"@codemirror/state",
-		"@codemirror/view",
-		"@lezer/common",
-		"@lezer/highlight",
-		"@lezer/lr",
-		...builtins,
-	],
-	format: "cjs",
-	target: "es2018",
-	logLevel: "info",
-	sourcemap: prod ? false : "inline",
-	treeShaking: true,
-	outfile: "main.js",
+  banner: {
+    js: banner,
+  },
+  entryPoints: ["src/main.ts"],
+  bundle: true,
+  external: [
+    "obsidian",
+    "electron",
+    "@codemirror/autocomplete",
+    "@codemirror/collab",
+    "@codemirror/commands",
+    "@codemirror/language",
+    "@codemirror/lint",
+    "@codemirror/search",
+    "@codemirror/state",
+    "@codemirror/view",
+    "@lezer/common",
+    "@lezer/highlight",
+    "@lezer/lr",
+    ...builtins,
+  ],
+  format: "cjs",
+  target: "es2018",
+  logLevel: "info",
+  sourcemap: prod ? false : "inline",
+  treeShaking: true,
+  outfile: "main.js",
 });
 
 if (prod) {
-	await context.rebuild();
-	copyFile("main.js", path.join(destinationDir, "main.js"));
-	copyFile("manifest.json", path.join(destinationDir, "manifest.json"));
-	copyFile("styles.css", path.join(destinationDir, "styles.css"));
-	process.exit(0);
+  await context.rebuild();
+  copyFile("main.js", path.join(destinationDir, "main.js"));
+  copyFile("manifest.json", path.join(destinationDir, "manifest.json"));
+  copyFile("styles.css", path.join(destinationDir, "styles.css"));
+  process.exit(0);
 } else {
-	fs.watch("main.js", (eventType, filename) => {
-		if (filename && eventType === "change") {
-			console.log("main.js changed, copying...");
-			copyFile("main.js", path.join(destinationDir, "main.js"));
-			copyFile(
-				"manifest.json",
-				path.join(destinationDir, "manifest.json")
-			);
-			copyFile("styles.css", path.join(destinationDir, "styles.css"));
-			fs.closeSync(
-				fs.openSync(path.join(destinationDir, ".hotreload"), "w")
-			);
-		}
-	});
+  fs.watch("main.js", (eventType, filename) => {
+    if (filename && eventType === "change") {
+      console.log("main.js changed, copying...");
+      copyFile("main.js", path.join(destinationDir, "main.js"));
+      copyFile("manifest.json", path.join(destinationDir, "manifest.json"));
+      copyFile("styles.css", path.join(destinationDir, "styles.css"));
+      fs.closeSync(fs.openSync(path.join(destinationDir, ".hotreload"), "w"));
+    }
+  });
 
-	await context.watch();
+  await context.watch();
 
-	console.log("watching...");
+  console.log("watching...");
 }
 
 process.stdin.on("close", () => {
-	process.exit(0);
+  process.exit(0);
 });

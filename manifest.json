@@ -1,11 +1,10 @@
 {
   "id": "automated-note-mover",
-  "name": "automated note mover",
+  "name": "Automated Note Mover",
   "version": "1.0.0",
   "minAppVersion": "0.15.0",
-  "description": "Change the filename of the current file to its title.",
-  "author": "Obsidian",
-  "authorUrl": "https://obsidian.md",
-  "fundingUrl": "https://obsidian.md/pricing",
+  "description": "Automated Note Mover",
+  "author": "@lgandecki",
+  "authorUrl": "https://github.com/lgandecki",
   "isDesktopOnly": false
 }

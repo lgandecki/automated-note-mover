@@ -1,96 +1,240 @@
-# Obsidian Sample Plugin
+# Automated Note Mover Plugin for Obsidian
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+An Obsidian plugin that automates moving and renaming notes within your vault using simple commands written directly in your notes.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+## Features
 
-**Note:** The Obsidian API is still in early alpha and is subject to change at any time!
+- **Move Notes**: Easily move the current note to a specified folder and rename it by writing a command in the note.
+- **Automatic Folder Creation**: If the destination folder does not exist, it will be created automatically.
+- **Title Update**: Updates the note's title (first line) to match the new filename after moving.
+- **Seamless Integration**: Works within Obsidian's interface without disrupting your workflow.
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+## Installation
 
-## First time developing plugins?
+### From GitHub
 
-Quick starting guide for new plugin devs:
+1. **Download the Plugin**:
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+   - [Download the latest release](https://github.com/lgandecki/automated-note-mover/releases) from GitHub.
+   - Alternatively, clone the repository:
 
-## Releasing new releases
+     ```bash
+     git clone https://github.com/lgandecki/automated-note-mover.git
+     ```
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+2. **Copy to Obsidian Plugins Folder**:
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+   - Locate your Obsidian vault's `.obsidian/plugins/` folder.
+   - Create a new folder named `automated-note-mover`.
+   - Copy the contents of the cloned repository or extracted zip file into this folder.
 
-## Adding your plugin to the community plugin list
+3. **Enable the Plugin in Obsidian**:
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+   - Open Obsidian.
+   - Go to **Settings** (click the gear icon in the left sidebar).
+   - Navigate to **Community Plugins**.
+     - If prompted, disable Safe Mode to allow community plugins.
+   - Click on **Installed Plugins**.
+   - Find **Automated Note Mover** in the list and toggle it **ON**.
 
-## How to use
+### From Obsidian Marketplace (when available)
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+- **Note**: This plugin is not yet available in the Obsidian Community Plugin Marketplace. Once approved, you can install it directly from within Obsidian. For now, use BART or build manually.
 
-## Manually installing the plugin
+## Usage
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+### Process Current Line Command
 
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
+The plugin introduces a new command: **"Process Current Line"**.
 
-## Funding URL
+- **Accessing the Command**:
+  - Open the Command Palette with `Ctrl+P` (Windows/Linux) or `Cmd+P` (macOS).
+  - Type **"Process Current Line"** to find and execute the command.
+- **Shortcut**:
+  - For quick access, you can assign a custom keyboard shortcut:
+    - Go to **Settings** → **Hotkeys**.
+    - Search for **"Process Current Line"**.
+    - Assign your preferred key combination.
 
-You can include funding URLs where people who use your plugin can financially support it.
+### Moving and Renaming Notes
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+1. **Write the Move Command**:
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
+   - In your note, write a line starting with `move` followed by the destination in double square brackets `[[ ]]`.
+     ```markdown
+     move [[DestinationFolder/NewFileName]]
+     ```
+   - Examples:
+     - Move and rename the note:
+       ```
+       move [[Projects/NextWeek/MeetingNotes]]
+       ```
+     - Move to a folder without renaming:
+       ```
+       move [[Archives/]]
+       ```
+     - You can keep the alias (which will be ignored):
+       ```
+       move [[Research/Topic|My Alias]]
+       ```
+
+2. **Execute the Command**:
+
+   - Place your cursor anywhere on the line containing the `move` command.
+   - Run the **"Process Current Line"** command via the Command Palette or your custom shortcut.
+
+3. **Result**:
+
+   - The current note will be moved to the specified destination.
+   - If a new filename is provided, the note will be renamed accordingly.
+   - The first line (title) of the note will be updated to match the new filename.
+   - If the destination folder does not exist, it will be created automatically.
+   - A confirmation notice will appear:
+     ```
+     Moved file to DestinationFolder/NewFileName.md
+     ```
+
+### Notes on Command Syntax
+
+- **Valid Commands**:
+
+  - Must start with `move` followed by a space.
+  - The destination must be enclosed in `[[double square brackets]]`.
+  - The destination can include folders and subfolders.
+
+- **Invalid Commands**:
+
+  - Commands not starting with `move` (e.g., `mv`, `Move`).
+  - Missing brackets or incorrect formatting.
+
+- **Error Handling**:
+  - If the command format is invalid, a notice will inform you:
+    ```
+    Invalid move command format.
+    ```
+  - If there is no active file or markdown view, appropriate notices will appear.
+
+## Examples
+
+### Move and Rename the Note
+
+```markdown
+move [[Work/Reports/Weekly Update]]
 ```
 
-If you have multiple URLs, you can also do:
+- **Action**: Moves the current note to `Work/Reports/` and renames it to `Weekly Update.md`.
+- **Result**: The note's title is updated to `# Weekly Update`.
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
+### Move to a Folder Without Changing the Filename
+
+```markdown
+move [[Personal/Journal/]]
 ```
 
-## API Documentation
+- **Action**: Moves the current note to `Personal/Journal/` without renaming.
+- **Result**: The note's title remains the same or is updated to match the filename.
 
-See https://github.com/obsidianmd/obsidian-api
+### Move with Alias (Alias is Ignored)
+
+```markdown
+move [[Books/ToRead|Reading List]]
+```
+
+- **Action**: Moves the current note to `Books/` and renames it to `ToRead.md`.
+- **Result**: The alias `Reading List` is ignored.
+
+## Configuration
+
+No additional configuration is required. The plugin works out of the box with the default settings.
+
+## Development
+
+### Building from Source
+
+Currently to use the project, or to contribute or modify the plugin:
+
+1. **Prerequisites**:
+
+   - [Node.js](https://nodejs.org/) installed (preferably version 14 or higher).
+   - Basic knowledge of TypeScript and Obsidian plugin development.
+
+2. **Clone the Repository**:
+
+   ```bash
+   git clone https://github.com/yourusername/automated-note-mover.git
+   ```
+
+3. **Install Dependencies**:
+
+   ```bash
+   cd automated-note-mover
+   pnpm install
+   ```
+
+4. **Build the Plugin**:
+
+   - For development (with watch mode).
+     note: it will copy the relevant files to your plugins folder initially and on change, but you need to set the OBSIDIAN_VAULT_PLUGINS_PATH
+
+     ```bash
+     export OBSIDIAN_VAULT_PLUGINS_PATH="/path/to/vault/.obsidian/plugins/" npm run dev
+     ```
+
+     - This will watch for changes and automatically rebuild the plugin.
+
+   - For production:
+
+     ```bash
+     npm run build
+     ```
+
+5. **Link to Obsidian Vault**:
+
+   - Create a symbolic link from the build folder to your vault's plugins folder:
+
+     ```bash
+     ln -s /path/to/automated-note-mover /path/to/your/vault/.obsidian/plugins/automated-note-mover
+     ```
+
+6. **Reload Obsidian**:
+
+   - After building, reload Obsidian to see the changes:
+     - Press `Ctrl+R` (Windows/Linux) or `Cmd+R` (macOS).
+
+### Contributing
+
+Contributions are welcome! Here's how you can help:
+
+- **Report Bugs**: If you find a bug, please open an issue with detailed information.
+- **Suggest Features**: Have an idea for a new feature? Feel free to create an issue to discuss it.
+- **Submit Pull Requests**: Code improvements, optimizations, and refactoring are appreciated.
+
+### Code Style Guidelines
+
+- Follow the existing coding style and structure.
+- Write clear, concise, and self-documenting code.
+- Ensure all changes maintain the plugin's functionality and reliability.
+
+## License
+
+[MIT License](LICENSE)
+
+- This plugin is open-source and free to use under the terms of the MIT License.
+
+## Support
+
+If you encounter any issues or have questions, please open an issue on the [GitHub repository](https://github.com/yourusername/automated-note-mover/issues).
+
+## Acknowledgments
+
+- **Obsidian Community**: Thanks to the Obsidian team and community for creating a powerful and extensible platform.
+- **Contributors**: Thank you to everyone who has contributed to this project.
+
+## Disclaimer
+
+- Use this plugin at your own risk.
+- Always back up your Obsidian vault before using plugins that modify files.
+
+---
+
+Enjoy streamlined note management with the Automated Note Mover plugin!
